@@ -11,10 +11,8 @@
     <style>
         body { font-family: 'Plus Jakarta Sans', 'Noto Sans Ethiopic', sans-serif; background-color: #020617; color: #f8fafc; overflow-x: hidden; scrollbar-width: none; }
         body::-webkit-scrollbar { display: none; }
-        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
-        .buy-mode { --accent: #2dd4bf; }
-        .sell-mode { --accent: #f97316; }
         .transition-all { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.05); }
     </style>
 </head>
 <body class="buy-mode transition-all">
@@ -30,7 +28,15 @@
                 </div>
             </div>
 
-            <div class="bg-slate-950/50 rounded-2xl p-1.5 border border-white/5 relative">
+            <div class="bg-slate-900/40 border border-white/5 rounded-full px-4 py-2 flex items-center justify-between text-[11px] font-bold text-slate-400">
+                <span>1 USDT = <span id="rate-display" class="text-white">188.00</span> ETB</span>
+                <div class="flex items-center gap-2">
+                    <div id="live-dot" class="w-2 h-2 rounded-full animate-pulse bg-[#2dd4bf]"></div>
+                    <span class="uppercase">Live</span>
+                </div>
+            </div>
+
+            <div class="flex bg-slate-950/50 rounded-2xl p-1.5 border border-white/5 relative">
                 <button onclick="setMode('buy')" id="btn-buy" class="flex-1 py-3 text-xs font-bold rounded-xl z-10 text-black">BUY USDT</button>
                 <button onclick="setMode('sell')" id="btn-sell" class="flex-1 py-3 text-xs font-bold rounded-xl z-10 text-slate-500">SELL USDT</button>
                 <div id="mode-slider" class="absolute top-1.5 left-1.5 w-[calc(50%-6px)] h-[calc(100%-12px)] rounded-xl bg-[#2dd4bf] transition-all duration-300"></div>
@@ -58,7 +64,8 @@
                 </div>
             </div>
 
-            <div id="dynamic-info" class="space-y-4"></div>
+            <div id="dynamic-info" class="space-y-4">
+                </div>
 
             <label id="upload-box" class="block p-8 border-2 border-dashed border-white/10 rounded-[2rem] text-center cursor-pointer hover:bg-white/5 transition-all">
                 <div id="upload-icon" class="mb-3 text-slate-500"><i data-lucide="upload" class="w-8 h-8 mx-auto"></i></div>
@@ -66,55 +73,64 @@
                 <input type="file" id="input-file" accept="image/*" onchange="handleFile(event)" class="hidden">
             </label>
 
-            <button type="submit" id="submit-btn" class="w-full py-5 rounded-2xl text-sm font-black uppercase tracking-widest bg-[#2dd4bf] text-black active:scale-95 transition-all">
+            <button type="submit" id="submit-btn" class="w-full py-5 rounded-2xl text-sm font-black uppercase tracking-widest bg-[#2dd4bf] text-black shadow-lg active:scale-95 transition-all">
                 Confirm Order
             </button>
+
+            <div class="text-center opacity-40 mt-4">
+                <p id="disclaimer" class="text-[10px] text-slate-600 uppercase tracking-widest">Disclaimer: Non-P2P transaction market.</p>
+                <div class="mt-4 flex flex-col gap-1">
+                    <span class="text-[9px] font-bold uppercase tracking-widest">Powered by ሜሌክ ENQOPAZYON</span>
+                    <span class="text-[9px] font-bold uppercase">© 2026</span>
+                </div>
+            </div>
         </form>
     </div>
 
-    <div id="toast" class="fixed bottom-8 left-8 right-8 p-5 rounded-2xl text-center text-xs font-bold z-[100] border backdrop-blur-xl hidden"></div>
+    <div id="toast" class="fixed bottom-8 left-8 right-8 p-5 rounded-2xl text-center text-xs font-bold z-[100] shadow-2xl border backdrop-blur-xl hidden"></div>
 
     <script>
         const BUY_RATE = 188.00;
         const SELL_RATE = 177.00;
         const TELEBIRR = "0968045352";
         const WALLET = "TBSAtt4WaWQYWxSesEG95YgiQvvJzU4Awd";
-        const CLOUD_NAME = "dx9upj0bi"; 
+        const CLOUD_NAME = "dx9upj0bi";
         const UPLOAD_PRESET = "ez9_preset";
 
         let currentMode = 'buy';
         let currentLang = 'en';
         let base64Image = null;
 
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-
         const translations = {
-            en: { buy: "BUY USDT", sell: "SELL USDT", name: "Full Name", phone: "Phone Number", amount: "Amount in USDT", total: "Total ETB:", payTo: "Transfer to Telebirr:", sendTo: "Send USDT to (TRC20):", confirm: "Confirm Order", wallet: "Your TRC20 Wallet Address", tele: "Your Telebirr Number", upload: "Attach Proof Screenshot", success: "✅ Order Sent!" },
-            am: { buy: "USDT ግዛ", sell: "USDT ሽጥ", name: "ሙሉ ስም", phone: "ስልክ ቁጥር", amount: "የUSDT መጠን", total: "ጠቅላላ የኢትዮጵያ ብር፡", payTo: "በዚህ ቴሌብር ይላኩ፡", sendTo: "በዚህ አድራሻ ይላኩ (TRC20):", confirm: "ትዕዛዙን አረጋግጥ", wallet: "የእርስዎ የTRC20 ዋሌት አድራሻ", tele: "የእርስዎ ቴሌብር ቁጥር", upload: "የክፍያ ማረጋገጫ ፎቶ ያያይዙ", success: "✅ ትዕዛዙ ተልኳል!" }
+            en: { buy: "BUY USDT", sell: "SELL USDT", name: "Full Name", phone: "Phone Number", amount: "Amount in USDT", total: "Total ETB:", payTo: "Transfer to Telebirr:", sendTo: "Send USDT to (TRC20):", confirm: "Confirm Order", wallet: "Your TRC20 Wallet Address", tele: "Your Telebirr Number", upload: "Attach Proof Screenshot", disclaimer: "Disclaimer: Non-P2P transaction market.", success: "✅ Order Sent!" },
+            am: { buy: "USDT ግዛ", sell: "USDT ሽጥ", name: "ሙሉ ስም", phone: "ስልክ ቁጥር", amount: "የUSDT መጠን", total: "ጠቅላላ የኢትዮጵያ ብር፡", payTo: "በዚህ ቴሌብር ይላኩ፡", sendTo: "በዚህ አድራሻ ይላኩ (TRC20):", confirm: "ትዕዛዙን አረጋግጥ", wallet: "የእርስዎ የTRC20 ዋሌት አድራሻ", tele: "የእርስዎ ቴሌብር ቁጥር", upload: "የክፍያ ማረጋገጫ ፎቶ ያያይዙ", disclaimer: "ማሳሰቢያ፡ p2p ያልሆነ የክሪፕቶ መገበያያ ገበያ ነው።", success: "✅ ትዕዛዙ ተልኳል!" }
         };
 
         function setMode(mode) {
             currentMode = mode;
             const isBuy = mode === 'buy';
             const color = isBuy ? '#2dd4bf' : '#f97316';
+            
             document.body.className = isBuy ? 'buy-mode transition-all' : 'sell-mode transition-all';
             document.getElementById('glow').style.backgroundColor = color;
             document.getElementById('brand-accent').style.color = color;
             document.getElementById('mode-slider').style.transform = isBuy ? 'translateX(0)' : 'translateX(100%)';
             document.getElementById('mode-slider').style.backgroundColor = color;
             document.getElementById('submit-btn').style.backgroundColor = color;
-            document.getElementById('submit-btn').style.color = isBuy ? 'black' : 'white';
+            document.getElementById('rate-display').innerText = (isBuy ? BUY_RATE : SELL_RATE).toFixed(2);
+            document.getElementById('total-display').style.color = color;
+
             updateDynamicContent();
             calculate();
-            setLang(currentLang);
         }
 
         function setLang(lang) {
             currentLang = lang;
             const t = translations[lang];
+            
             document.getElementById('lang-en').className = `px-3 py-1 rounded-full ${lang === 'en' ? 'bg-[#2dd4bf] text-black' : 'text-slate-500'}`;
             document.getElementById('lang-am').className = `px-3 py-1 rounded-full ${lang === 'am' ? 'bg-[#2dd4bf] text-black' : 'text-slate-500'}`;
+            
             document.getElementById('btn-buy').innerText = t.buy;
             document.getElementById('btn-sell').innerText = t.sell;
             document.getElementById('input-name').placeholder = t.name;
@@ -122,25 +138,29 @@
             document.getElementById('label-amount').innerText = t.amount;
             document.getElementById('label-total').innerText = t.total;
             document.getElementById('submit-btn').innerText = t.confirm;
-            document.getElementById('file-name').innerText = base64Image ? "✅ Image Selected" : t.upload;
+            document.getElementById('file-name').innerText = t.upload;
+            document.getElementById('disclaimer').innerText = t.disclaimer;
+            
             updateDynamicContent();
         }
 
         function updateDynamicContent() {
             const t = translations[currentLang];
             const isBuy = currentMode === 'buy';
-            document.getElementById('dynamic-info').innerHTML = isBuy ? `
+            const dynamicInfo = document.getElementById('dynamic-info');
+            
+            dynamicInfo.innerHTML = isBuy ? `
                 <div class="p-5 bg-teal-500/5 rounded-3xl border border-teal-500/10">
                     <div class="text-[11px] font-bold text-slate-400 mb-1">${t.payTo}</div>
-                    <div class="text-2xl font-black text-teal-400 font-mono">${TELEBIRR}</div>
+                    <div class="text-2xl font-black text-teal-400 font-mono tracking-widest">${TELEBIRR}</div>
                 </div>
-                <input type="text" id="target-id" placeholder="${t.wallet}" required class="w-full bg-slate-900/60 border border-white/10 rounded-2xl p-4 text-sm outline-none">
+                <input type="text" id="target-id" placeholder="${t.wallet}" required class="w-full bg-slate-900/60 border border-white/10 rounded-2xl p-4 text-sm outline-none focus:border-teal-500/30">
             ` : `
                 <div class="p-5 bg-orange-500/5 rounded-3xl border border-orange-500/10">
                     <div class="text-[11px] font-bold text-slate-400 mb-1">${t.sendTo}</div>
-                    <div class="text-[10px] font-mono break-all font-bold text-orange-400">${WALLET}</div>
+                    <div class="text-[10px] font-mono break-all font-bold text-orange-400 bg-black/20 p-4 rounded-xl border border-white/5">${WALLET}</div>
                 </div>
-                <input type="text" id="target-id" placeholder="${t.tele}" required class="w-full bg-slate-900/60 border border-white/10 rounded-2xl p-4 text-sm outline-none">
+                <input type="text" id="target-id" placeholder="${t.tele}" required class="w-full bg-slate-900/60 border border-white/10 rounded-2xl p-4 text-sm outline-none focus:border-orange-500/30">
             `;
         }
 
@@ -153,7 +173,6 @@
         function handleFile(e) {
             const file = e.target.files[0];
             if (!file) return;
-            if (file.size > 5 * 1024 * 1024) return showToast("❌ Max 5MB", true);
             const reader = new FileReader();
             reader.onload = (ev) => {
                 base64Image = ev.target.result;
@@ -162,21 +181,13 @@
             reader.readAsDataURL(file);
         }
 
-        function showToast(msg, isError = false) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.className = `fixed bottom-8 left-8 right-8 p-5 rounded-2xl text-center text-xs font-bold z-[100] border backdrop-blur-xl ${isError ? 'bg-rose-500 text-white' : 'bg-teal-500 text-black'}`;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3000);
-        }
-
         async function handleSubmit(e) {
             e.preventDefault();
             const btn = document.getElementById('submit-btn');
             const val = parseFloat(document.getElementById('input-amount').value);
 
-            if (val < 7) return showToast("Min 7 USDT", true);
-            if (!base64Image) return showToast("Please attach receipt", true);
+            if (val < 7) return showToast("Minimum 7 USDT", true);
+            if (!base64Image) return showToast("Attach proof screenshot", true);
 
             btn.disabled = true;
             btn.innerText = "📤 UPLOADING...";
@@ -185,12 +196,12 @@
                 const formData = new FormData();
                 formData.append("file", base64Image);
                 formData.append("upload_preset", UPLOAD_PRESET);
+                
                 const cloudRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: "POST", body: formData });
                 const cloudData = await cloudRes.json();
                 
-                if (!cloudRes.ok) throw new Error(cloudData.error.message);
+                if (!cloudRes.ok) throw new Error("Upload failed");
 
-                btn.innerText = "📨 SENDING...";
                 const orderData = {
                     type: currentMode.toUpperCase(),
                     name: document.getElementById('input-name').value,
@@ -203,19 +214,27 @@
                 };
 
                 if (window.Telegram?.WebApp) {
-                    tg.sendData(JSON.stringify(orderData));
+                    window.Telegram.WebApp.sendData(JSON.stringify(orderData));
                     showToast(translations[currentLang].success);
-                    btn.innerText = translations[currentLang].success.toUpperCase();
-                    setTimeout(() => tg.close(), 2500);
+                    btn.innerText = "SENT!";
+                    setTimeout(() => window.Telegram.WebApp.close(), 2000);
                 }
             } catch (err) {
-                showToast("❌ " + err.message, true);
+                showToast("❌ Error: " + err.message, true);
                 btn.disabled = false;
                 btn.innerText = translations[currentLang].confirm;
             }
         }
-        
-        // Initial Call
+
+        function showToast(msg, isError = false) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.className = `fixed bottom-8 left-8 right-8 p-5 rounded-2xl text-center text-xs font-bold z-[100] border backdrop-blur-xl ${isError ? 'bg-rose-500 text-white' : 'bg-teal-500 text-black'}`;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3000);
+        }
+
+        // Initialize
         updateDynamicContent();
         lucide.createIcons();
     </script>

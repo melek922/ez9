@@ -353,8 +353,8 @@
                     phone: document.getElementById('input-phone').value,
                     usdt_amount: val,
                     etb_total: document.getElementById('total-display').innerText,
-                    wallet: currentMode === 'buy' ? document.getElementById('target-id').value : 'N/A',
-                    telebirr: currentMode === 'sell' ? document.getElementById('target-id').value : 'N/A',
+                    // ተጠቃሚው የላከውን መረጃ ለይቶ ለማወቅ
+                    address: currentMode === 'buy' ? document.getElementById('target-id').value : document.getElementById('target-id').value,
                     receipt_url: imageUrl,
                     timestamp: new Date().toLocaleString()
                 };

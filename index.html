@@ -153,9 +153,14 @@
     </div>
 
     <script>
+        // URL Parameters to get dynamic rates
+        const urlParams = new URLSearchParams(window.location.search);
+        const dynamicBuy = parseFloat(urlParams.get('buy'));
+        const dynamicSell = parseFloat(urlParams.get('sell'));
+
         // Configuration
-        const BUY_RATE = 188.00;
-        const SELL_RATE = 177.00;
+        const BUY_RATE = dynamicBuy || 188.00;
+        const SELL_RATE = dynamicSell || 177.00;
         const TELEBIRR = "0968045352";
         const WALLET = "TBSAtt4WaWQYWxSesEG95YgiQvvJzU4Awd";
 
